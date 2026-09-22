@@ -15,5 +15,25 @@ services:
       timeout: 3s
       retries: 10
 
+  api:
+    build: ./api
+    environment:
+      DATABASE_URL: postgresql://thor:thor@db:5432/thor
+      AI_PROVIDER: ${AI_PROVIDER:-mock}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-deepseek/deepseek-v4-flash}
+      AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-20000}
+      MOCK_MODE: ${MOCK_MODE:-success}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
 volumes:
   pgdata:
