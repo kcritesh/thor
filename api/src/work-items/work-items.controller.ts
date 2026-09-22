@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   Patch,
@@ -46,5 +47,17 @@ export class WorkItemsController {
     @Body() dto: UpdateStatusDto,
   ) {
     return this.workItems.updateStatus(id, dto.status);
+  }
+
+  @Post(':id/analyse')
+  @HttpCode(HttpStatus.OK)
+  analyse(@Param('id', ParseUUIDPipe) id: string) {
+    return this.workItems.analyse(id);
+  }
+
+  @Post(':id/retry')
+  @HttpCode(HttpStatus.OK)
+  retry(@Param('id', ParseUUIDPipe) id: string) {
+    return this.workItems.retry(id);
   }
 }

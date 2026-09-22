@@ -2,17 +2,26 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { AnalysisService } from '../analysis/analysis.service.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { WorkItemStatus } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateWorkItemDto } from './dto/create-work-item.dto.js';
 import { MANUAL_TARGETS, canTransition, sourcesFor } from './workflow.js';
 
+const { RECEIVED, ANALYSING, READY_FOR_REVIEW, FAILED } = WorkItemStatus;
+
 @Injectable()
 export class WorkItemsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(WorkItemsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly analysis: AnalysisService,
+  ) {}
 
   // The unique index on externalId is the idempotency guarantee: concurrent
   // duplicates lose the insert race with P2002 and read back the winner's row.
@@ -60,6 +69,57 @@ export class WorkItemsService {
     return this.findOne(id);
   }
 
+  analyse(id: string) {
+    return this.runAnalysis(id, RECEIVED);
+  }
+
+  retry(id: string) {
+    return this.runAnalysis(id, FAILED);
+  }
+
+  // Claiming ANALYSING via compare-and-set means only one request calls the
+  // LLM. The result write is also conditional on ANALYSING, and a failed
+  // analysis only touches lastError, so bad AI output never corrupts the item.
+  private async runAnalysis(id: string, from: WorkItemStatus) {
+    const item = await this.transition(id, [from], ANALYSING, {
+      lastError: null,
+    });
+    const { result, attempt } = await this.analysis.analyse(item);
+
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.analysisAttempt.create({
+          data: { ...attempt, workItemId: id },
+        });
+        if (result) {
+          await this.transition(
+            id,
+            [ANALYSING],
+            READY_FOR_REVIEW,
+            { ...result, analysedAt: new Date() },
+            tx,
+          );
+        } else {
+          await this.transition(
+            id,
+            [ANALYSING],
+            FAILED,
+            { lastError: attempt.errorMessage },
+            tx,
+          );
+        }
+      });
+    } catch (error) {
+      this.logger.error(`Saving analysis for ${id} failed`, error);
+      await this.prisma.workItem.updateMany({
+        where: { id, status: ANALYSING },
+        data: { status: FAILED, lastError: 'Failed to save analysis result' },
+      });
+      throw error;
+    }
+    return this.findOne(id);
+  }
+
   // Compare-and-set: the update only matches while the row is still in an
   // allowed source status, so concurrent requests cannot both win.
   private async transition(
@@ -70,11 +130,11 @@ export class WorkItemsService {
     db: Prisma.TransactionClient = this.prisma,
   ) {
     const allowed = from.filter((status) => canTransition(status, to));
-    const { count } = await db.workItem.updateMany({
+    const [updated] = await db.workItem.updateManyAndReturn({
       where: { id, status: { in: allowed } },
       data: { ...data, status: to },
     });
-    if (count > 0) return;
+    if (updated) return updated;
 
     const current = await db.workItem.findUnique({
       where: { id },
@@ -82,7 +142,7 @@ export class WorkItemsService {
     });
     if (!current) throw new NotFoundException(`Work item ${id} not found`);
     throw new ConflictException(
-      `Cannot move work item from ${current.status} to ${to}`,
+      `Cannot move work item to ${to}: it is ${current.status}, expected ${allowed.join(' or ')}`,
     );
   }
 }
