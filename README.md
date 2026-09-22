@@ -10,11 +10,21 @@ Receives work items from an external system, analyses them with an LLM, and lets
 ## Quick start
 
 ```bash
-cp .env.example .env     # optional: AI_PROVIDER=openrouter + OPENROUTER_API_KEY
+cp .env.example .env
+```
+
+Edit `.env` to use the real model instead of the mock, with the OpenRouter key provided in the submission email:
+
+```bash
+AI_PROVIDER=openrouter
+OPENROUTER_API_KEY=<key from email>
+```
+
+```bash
 docker compose up --build
 ```
 
-Open http://localhost:8080 (API at `/api`). No key needed: the mock provider is the default.
+Open http://localhost:8080 (API at `/api`). Leaving `AI_PROVIDER=mock` runs without a key.
 
 ```bash
 curl -X POST localhost:8080/api/work-items -H 'content-type: application/json' \
