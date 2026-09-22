@@ -1,0 +1,75 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum WorkItemStatus {
+  RECEIVED
+  ANALYSING
+  READY_FOR_REVIEW
+  COMPLETED
+  FAILED
+}
+
+enum Category {
+  DOCUMENT_REQUEST
+  INFORMATION_REQUEST
+  COMPLAINT
+  TECHNICAL_ISSUE
+  GENERAL_INQUIRY
+  OTHER
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum AnalysisErrorType {
+  TIMEOUT
+  INVALID_OUTPUT
+  PROVIDER_ERROR
+}
+
+model WorkItem {
+  id                String            @id @default(uuid()) @db.Uuid
+  externalId        String            @unique @map("external_id")
+  title             String
+  description       String
+  status            WorkItemStatus    @default(RECEIVED)
+  category          Category?
+  priority          Priority?
+  summary           String?
+  recommendedAction String?           @map("recommended_action")
+  lastError         String?           @map("last_error")
+  analysedAt        DateTime?         @map("analysed_at")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  attempts          AnalysisAttempt[]
+
+  @@index([status, createdAt])
+  @@map("work_items")
+}
+
+model AnalysisAttempt {
+  id           String             @id @default(uuid()) @db.Uuid
+  workItemId   String             @map("work_item_id") @db.Uuid
+  workItem     WorkItem           @relation(fields: [workItemId], references: [id], onDelete: Cascade)
+  success      Boolean
+  errorType    AnalysisErrorType? @map("error_type")
+  errorMessage String?            @map("error_message")
+  rawOutput    String?            @map("raw_output")
+  model        String
+  latencyMs    Int                @map("latency_ms")
+  createdAt    DateTime           @default(now()) @map("created_at")
+
+  @@index([workItemId, createdAt])
+  @@map("analysis_attempts")
+}

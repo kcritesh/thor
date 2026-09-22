@@ -13,6 +13,8 @@ node_modules/
 dist/
 build/
 coverage/
+*.tsbuildinfo
+api/src/generated/
 
 # OS / editor
 .DS_Store
