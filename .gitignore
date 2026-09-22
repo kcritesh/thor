@@ -1,0 +1,21 @@
+# Private notes
+guides/
+what_we_are_building.md
+IMPLEMENTATION_PLAN.md
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Deps / build
+node_modules/
+dist/
+build/
+coverage/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.log
