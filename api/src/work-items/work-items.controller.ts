@@ -4,6 +4,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  Patch,
   ParseUUIDPipe,
   Post,
   Query,
@@ -12,6 +13,7 @@ import {
 import type { Response } from 'express';
 import { CreateWorkItemDto } from './dto/create-work-item.dto.js';
 import { ListWorkItemsQuery } from './dto/list-work-items.query.js';
+import { UpdateStatusDto } from './dto/update-status.dto.js';
 import { WorkItemsService } from './work-items.service.js';
 
 @Controller('work-items')
@@ -36,5 +38,13 @@ export class WorkItemsController {
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.workItems.findOne(id);
+  }
+
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateStatusDto,
+  ) {
+    return this.workItems.updateStatus(id, dto.status);
   }
 }
