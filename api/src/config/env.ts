@@ -20,10 +20,13 @@ const envSchema = z
     AI_TIMEOUT_MS: z.coerce.number().int().positive().default(20000),
     MOCK_MODE: z.enum(MOCK_MODES).default('success'),
   })
-  .refine((env) => env.AI_PROVIDER !== 'openrouter' || !!env.OPENROUTER_API_KEY, {
-    message: 'OPENROUTER_API_KEY is required when AI_PROVIDER=openrouter',
-    path: ['OPENROUTER_API_KEY'],
-  });
+  .refine(
+    (env) => env.AI_PROVIDER !== 'openrouter' || !!env.OPENROUTER_API_KEY,
+    {
+      message: 'OPENROUTER_API_KEY is required when AI_PROVIDER=openrouter',
+      path: ['OPENROUTER_API_KEY'],
+    },
+  );
 
 export type Env = z.infer<typeof envSchema>;
 
