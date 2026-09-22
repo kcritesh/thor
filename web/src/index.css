@@ -1,0 +1,84 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/onest";
+@import "@fontsource-variable/jetbrains-mono";
+
+@theme inline {
+  --font-sans: "Onest Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--primary-soft);
+  --color-secondary-foreground: var(--primary);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--muted);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: var(--failed);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-received: var(--received);
+  --color-received-soft: var(--received-soft);
+  --color-analysing: var(--analysing);
+  --color-analysing-soft: var(--analysing-soft);
+  --color-review: var(--review);
+  --color-review-soft: var(--review-soft);
+  --color-completed: var(--completed);
+  --color-completed-soft: var(--completed-soft);
+  --color-failed: var(--failed);
+  --color-failed-soft: var(--failed-soft);
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+}
+
+:root {
+  --radius: 10px;
+  --background: #f6f7fb;
+  --foreground: #1b1f3b;
+  --card: #ffffff;
+  --primary: #3b3fb6;
+  --primary-strong: #2c2f8f;
+  --primary-soft: #e7e8fb;
+  --primary-foreground: #ffffff;
+  --muted: #eef0f6;
+  --muted-foreground: #5b6180;
+  --border: #e3e5f0;
+  --input: #d6d9e8;
+  --ring: #3b3fb6;
+
+  --received: #475069;
+  --received-soft: #eceef4;
+  --analysing: #3b3fb6;
+  --analysing-soft: #e7e8fb;
+  --review: #8a5a00;
+  --review-soft: #fdf1d8;
+  --completed: #1f6b4a;
+  --completed-soft: #e1f3ea;
+  --failed: #b4233c;
+  --failed-soft: #fde7ea;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "tnum" 1;
+  }
+}
