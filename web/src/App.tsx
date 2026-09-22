@@ -5,6 +5,7 @@ import { CreateWorkItemDialog } from '@/components/create-work-item-dialog'
 import { IconChip } from '@/components/icon-chip'
 import { StatusFilter } from '@/components/status-filter'
 import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { WorkItemDetail } from '@/components/work-item-detail'
 import { WorkItemList } from '@/components/work-item-list'
 import { useWorkItems } from '@/hooks/use-work-items'
@@ -23,7 +24,7 @@ export default function App() {
   const attention = all.data?.filter((item) => NEEDS_ATTENTION.includes(item.status)).length
 
   return (
-    <div className="min-h-dvh">
+    <div className="flex min-h-dvh flex-col lg:h-dvh">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
           <IconChip icon={ZapIcon} tone={{ text: 'text-primary', bg: 'bg-primary-soft' }} />
@@ -38,7 +39,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto flex w-full max-w-7xl min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-5">
           <h1 className="text-[28px] font-semibold tracking-[-0.02em]">Work queue</h1>
           <p className="mt-1 text-muted-foreground">
@@ -50,21 +51,25 @@ export default function App() {
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(340px,420px)_1fr]">
-          <section className={cn('min-w-0 space-y-4', selectedId && 'max-lg:hidden')}>
+        <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(340px,420px)_1fr]">
+          <section className={cn('flex min-h-0 min-w-0 flex-col gap-4', selectedId && 'max-lg:hidden')}>
             <StatusFilter value={status} onChange={setStatus} items={all.data} />
-            <WorkItemList
-              items={filtered.data}
-              isLoading={filtered.isLoading}
-              error={filtered.error}
-              onRetry={() => filtered.refetch()}
-              status={status}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-            />
+            <ScrollArea className="-m-1 min-h-0 flex-1 lg:-mr-4">
+              <div className="p-1 lg:pr-4">
+                <WorkItemList
+                  items={filtered.data}
+                  isLoading={filtered.isLoading}
+                  error={filtered.error}
+                  onRetry={() => filtered.refetch()}
+                  status={status}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                />
+              </div>
+            </ScrollArea>
           </section>
 
-          <section className={cn('min-w-0 lg:sticky lg:top-6 lg:self-start', !selectedId && 'max-lg:hidden')}>
+          <section className={cn('min-h-0 min-w-0 lg:overflow-y-auto', !selectedId && 'max-lg:hidden')}>
             {selectedId ? (
               <WorkItemDetail id={selectedId} onBack={() => setSelectedId(null)} />
             ) : (

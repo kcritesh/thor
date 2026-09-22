@@ -81,4 +81,11 @@
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "tnum" 1;
   }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  select {
+    cursor: pointer;
+  }
 }
