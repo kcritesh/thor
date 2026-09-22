@@ -10,7 +10,6 @@ COPY . .
 RUN pnpm build
 
 FROM node:24-alpine
-RUN npm install -g pnpm@11
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/package.json /app/prisma.config.ts ./
@@ -18,4 +17,4 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/dist ./dist
 EXPOSE 3000
-CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/main.js"]
