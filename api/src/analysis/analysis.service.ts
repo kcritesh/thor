@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { z } from 'zod';
 import type { Env } from '../config/env.js';
 import { AnalysisErrorType } from '../generated/prisma/enums.js';
 import {
@@ -106,9 +105,12 @@ export class AnalysisService {
 
     const parsed = analysisResultSchema.safeParse(raw);
     if (!parsed.success) {
+      const fields = [
+        ...new Set(parsed.error.issues.map((i) => i.path.join('.') || 'root')),
+      ];
       return fail(
         AnalysisErrorType.INVALID_OUTPUT,
-        `AI returned an invalid result: ${z.prettifyError(parsed.error)}`,
+        `AI returned an invalid result (${fields.join(', ')})`,
         raw,
       );
     }
